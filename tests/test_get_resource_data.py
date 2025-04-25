@@ -34,7 +34,7 @@ class TestResources:
                 with allure.step("Проверяем первый символ значения цвета"):
                     assert item["color"].startswith(COLOR_STARTS)
                 with allure.step("Проверяем количество символов pantone_value"):
-                    assert len(item["pantone_value"]) == 7 == 7, "Длина pantone_value не соответствует формату"
+                    assert len(item["pantone_value"]) == 7 == 7, "Длина pantone_value отличается от ожидаемого"
                 with allure.step("Проверяем наличие дефиса в pantone_value"):
                     assert (item["pantone_value"][2]) == "-", "Отсутствует дефис в pantone_value"
 
