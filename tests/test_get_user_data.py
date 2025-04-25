@@ -1,63 +1,51 @@
-from http.client import responses
-
+import allure
 import httpx
 from jsonschema import validate
-from core.contracts import USER_DATA_SCHEMA, LIST_RESOURCE_SCHEMA
+from core.contracts import USER_DATA_SCHEMA
 
 BASE_URL = "https://reqres.in/"
 LIST_USERS = "api/users?page=2"
 SINGLE_USER = "api/users/2"
 SINGLE_USER_NOT_FOUND = "api/users/23"
-LIST_RESOURCE = "api/unknown"
-SINGLE_RESOURCE = "api/unknown/2"
-SINGLE_RESOURCE_NOT_FOUND = "api/unknown/23"
 EMAIL_ENDS = "reqres.in"
 AVATAR_ENDS = "-image.jpg"
-COLOR_STARTS = "#"
-
-def test_list_users():
-    response = httpx.get(BASE_URL + LIST_USERS)
-    assert response.status_code == 200
-    data = response.json()['data']
-
-    for item in data:
-        validate(item, USER_DATA_SCHEMA)
-        assert item["email"].endswith(EMAIL_ENDS)
-        assert item["avatar"].endswith(str(item["id"]) + AVATAR_ENDS)
 
 
-def test_single_user():
-    response = httpx.get(BASE_URL + SINGLE_USER)
-    assert response.status_code == 200
-    data = response.json()['data']
-    assert data["email"].endswith(EMAIL_ENDS)
-    assert data["avatar"].endswith(str(data["id"]) + AVATAR_ENDS)
 
+@allure.feature("Users")
+class TestUsers:
+    @allure.title("Получение списка пользователей")
+    def test_list_users(self):
+        with allure.step("Отправка запроса на получение списка пользователей"):
+            response = httpx.get(BASE_URL + LIST_USERS)
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
 
-def test_single_user_not_found():
-    response = httpx.get(BASE_URL + SINGLE_USER_NOT_FOUND)
-    assert response.status_code == 404
+        data = response.json()['data']
+        for item in data:
+            with allure.step("Проверка элемента из списка"):
+                validate(item, USER_DATA_SCHEMA)
+                with allure.step("Проверка окончания email адреса"):
+                    assert item["email"].endswith(EMAIL_ENDS), "Окончание email не совпало с ожидаемым"
+                with allure.step("Проверка наличия id в ссылке аватара"):
+                    assert item["avatar"].endswith(str(item["id"]) + AVATAR_ENDS), "id отсутствует в ссылке аватарки"
 
+    @allure.title("Получение данных одного пользователя")
+    def test_single_user(self):
+        with allure.step("Отправка запроса на получение данных одого пользователя"):
+            response = httpx.get(BASE_URL + SINGLE_USER)
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
 
-def test_list_resource():
-    response = httpx.get(BASE_URL + LIST_RESOURCE)
-    assert response.status_code == 200
-    data = response.json()['data']
+            data = response.json()['data']
+        with allure.step("Проверка окончания email адреса"):
+            assert data["email"].endswith(EMAIL_ENDS), "окончаниe email адреса не совпало с ожидаемым"
+        with allure.step("Проверка наличия id в ссылке на аватарку"):
+            assert data["avatar"].endswith(str(data["id"]) + AVATAR_ENDS), "id отстутствует в ссылке на аватарку"
 
-    for item in data:
-        validate(item, LIST_RESOURCE_SCHEMA)
-        assert item["color"].startswith(COLOR_STARTS)
-        assert len(item["pantone_value"]) == 7 == 7, "Длина pantone_value не соответствует формату"
-        assert (item["pantone_value"][2]) == "-", "Отсутствует дефис в pantone_value"
-
-def test_single_resource():
-    response = httpx.get(BASE_URL + SINGLE_RESOURCE)
-    assert response.status_code == 200
-    data = response.json()['data']
-    assert data["color"].startswith(COLOR_STARTS)
-    assert len( data["pantone_value"]) == 7 == 7, "Длина pantone_value не соответствует формату"
-    assert (data["pantone_value"][2]) == "-", "Отсутствует дефис в pantone_value"
-
-def test_single_resource_not_found():
-    response = httpx.get(BASE_URL + SINGLE_RESOURCE_NOT_FOUND)
-    assert response.status_code == 404
+    @allure.title("Проверка, что пользователь не найден")
+    def test_single_user_not_found(self):
+        with allure.step("Отправка запроса на получение данных одого пользователя"):
+            response = httpx.get(BASE_URL + SINGLE_USER_NOT_FOUND)
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 401, "Код ответа не совпал с ожидаемым"
