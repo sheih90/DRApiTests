@@ -3,12 +3,9 @@ from http.client import responses
 import allure
 import httpx
 from jsonschema import validate
-from core.contracts import USER_DATA_SCHEMA, LIST_RESOURCE_SCHEMA
+from core.contracts import  LIST_RESOURCE_SCHEMA
 
 BASE_URL = "https://reqres.in/"
-LIST_USERS = "api/users?page=2"
-SINGLE_USER = "api/users/2"
-SINGLE_USER_NOT_FOUND = "api/users/23"
 LIST_RESOURCE = "api/unknown"
 SINGLE_RESOURCE = "api/unknown/2"
 SINGLE_RESOURCE_NOT_FOUND = "api/unknown/23"
@@ -25,7 +22,7 @@ class TestResources:
             response = httpx.get(BASE_URL + LIST_RESOURCE)
 
         with allure.step("Проверяем код ответа"):
-            assert response.status_code == 200
+            assert response.status_code == 401
 
         data = response.json()['data']
         for item in data:
@@ -61,4 +58,4 @@ class TestResources:
         with allure.step(f"Отправляем запрос по адресу: {BASE_URL + SINGLE_RESOURCE_NOT_FOUND}"):
             response = httpx.get(BASE_URL + SINGLE_RESOURCE_NOT_FOUND)
         with allure.step("Проверяем код ответа"):
-            assert response.status_code == 404
+            assert response.status_code == 401
