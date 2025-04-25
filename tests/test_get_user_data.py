@@ -1,5 +1,4 @@
-from http.client import responses
-
+import allure
 import httpx
 from jsonschema import validate
 from core.contracts import USER_DATA_SCHEMA, LIST_RESOURCE_SCHEMA
@@ -15,49 +14,87 @@ EMAIL_ENDS = "reqres.in"
 AVATAR_ENDS = "-image.jpg"
 COLOR_STARTS = "#"
 
-def test_list_users():
-    response = httpx.get(BASE_URL + LIST_USERS)
-    assert response.status_code == 200
-    data = response.json()['data']
+# @allure.epic("Тестирование API")
+# @allure.story("Проверка список пользователей")
+# class TestResources:
+#     @allure.title("Проверка получения списка ресурсов")
+#     def test_list_resource(self):
+#         with allure.step(f"Отправляем запрос по адресу: {BASE_URL + LIST_RESOURCE}"):
+#             response = httpx.get(BASE_URL + LIST_RESOURCE)
+#
+#         with allure.step("Проверяем код ответа"):
+#             assert response.status_code == 200
+#
+#         data = response.json()['data']
+#         for item in data:
+#             with allure.step(""):
+#                 validate(item, LIST_RESOURCE_SCHEMA)
+#                 with allure.step("Проверяем первый символ значения цвета"):
+#                     assert item["color"].startswith(COLOR_STARTS)
+#                 with allure.step("Проверяем количество символов pantone_value"):
+#                     assert len(item["pantone_value"]) == 7 == 7, "Длина pantone_value не соответствует формату"
+#                 with allure.step("Проверяем наличие дефиса в pantone_value"):
+#                     assert (item["pantone_value"][2]) == "-", "Отсутствует дефис в pantone_value"
+#
+#
+#     @allure.title("Проверка получения одного ресурса")
+#     def test_single_resource(self):
+#         with allure.step(f"Отправляем запрос по адресу: {BASE_URL + SINGLE_RESOURCE}"):
+#             response = httpx.get(BASE_URL + SINGLE_RESOURCE)
+#         with allure.step("Проверяем код ответа"):
+#             assert response.status_code == 200
+#
+#         data = response.json()['data']
+#
+#         with allure.step("Проверяем первый символ значения цвета"):
+#             assert data["color"].startswith(COLOR_STARTS)
+#         with allure.step("Проверяем количество символов pantone_value"):
+#             assert len(data["pantone_value"]) == 7 == 7, "Длина pantone_value не соответствует формату"
+#         with allure.step("Проверяем наличие дефиса в pantone_value"):
+#             assert (data["pantone_value"][2]) == "-", "Отсутствует дефис в pantone_value"
+#
+#
+#     @allure.title("Проверяем, что ресурс не найден")
+#     def test_single_resource_not_found(self):
+#         with allure.step(f"Отправляем запрос по адресу: {BASE_URL + SINGLE_RESOURCE_NOT_FOUND}"):
+#             response = httpx.get(BASE_URL + SINGLE_RESOURCE_NOT_FOUND)
+#         with allure.step("Проверяем код ответа"):
+#             assert response.status_code == 404
 
-    for item in data:
-        validate(item, USER_DATA_SCHEMA)
-        assert item["email"].endswith(EMAIL_ENDS)
-        assert item["avatar"].endswith(str(item["id"]) + AVATAR_ENDS)
+@allure.feature("Users")
+class TestUsers:
+    @allure.title("Получение списка пользователей")
+    def test_list_users(self):
+        with allure.step("Отправка запроса на получение списка пользователей"):
+            response = httpx.get(BASE_URL + LIST_USERS)
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
 
+        data = response.json()['data']
+        for item in data:
+            with allure.step("Проверка элемента из списка"):
+                validate(item, USER_DATA_SCHEMA)
+                with allure.step("Проверка окончания email адреса"):
+                    assert item["email"].endswith(EMAIL_ENDS), "Окончание email не совпало с ожидаемым"
+                with allure.step("Проверка наличия id в ссылке аватара"):
+                    assert item["avatar"].endswith(str(item["id"]) + AVATAR_ENDS), "id отсутствует в ссылке аватарки"
 
-def test_single_user():
-    response = httpx.get(BASE_URL + SINGLE_USER)
-    assert response.status_code == 200
-    data = response.json()['data']
-    assert data["email"].endswith(EMAIL_ENDS)
-    assert data["avatar"].endswith(str(data["id"]) + AVATAR_ENDS)
+    @allure.title("Получение данных одного пользователя")
+    def test_single_user(self):
+        with allure.step("Отправка запроса на получение данных одого пользователя"):
+            response = httpx.get(BASE_URL + SINGLE_USER)
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
 
+            data = response.json()['data']
+        with allure.step("Проверка окончания email адреса"):
+            assert data["email"].endswith(EMAIL_ENDS), "окончаниe email адреса не совпало с ожидаемым"
+        with allure.step("Проверка наличия id в ссылке на аватарку"):
+            assert data["avatar"].endswith(str(data["id"]) + AVATAR_ENDS), "id отстутствует в ссылке на аватарку"
 
-def test_single_user_not_found():
-    response = httpx.get(BASE_URL + SINGLE_USER_NOT_FOUND)
-    assert response.status_code == 404
-
-
-def test_list_resource():
-    response = httpx.get(BASE_URL + LIST_RESOURCE)
-    assert response.status_code == 200
-    data = response.json()['data']
-
-    for item in data:
-        validate(item, LIST_RESOURCE_SCHEMA)
-        assert item["color"].startswith(COLOR_STARTS)
-        assert len(item["pantone_value"]) == 7 == 7, "Длина pantone_value не соответствует формату"
-        assert (item["pantone_value"][2]) == "-", "Отсутствует дефис в pantone_value"
-
-def test_single_resource():
-    response = httpx.get(BASE_URL + SINGLE_RESOURCE)
-    assert response.status_code == 200
-    data = response.json()['data']
-    assert data["color"].startswith(COLOR_STARTS)
-    assert len( data["pantone_value"]) == 7 == 7, "Длина pantone_value не соответствует формату"
-    assert (data["pantone_value"][2]) == "-", "Отсутствует дефис в pantone_value"
-
-def test_single_resource_not_found():
-    response = httpx.get(BASE_URL + SINGLE_RESOURCE_NOT_FOUND)
-    assert response.status_code == 404
+    @allure.title("Проверка, что пользователь не найден")
+    def test_single_user_not_found(self):
+        with allure.step("Отправка запроса на получение данных одого пользователя"):
+            response = httpx.get(BASE_URL + SINGLE_USER_NOT_FOUND)
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 404, "Код ответа не совпал с ожидаемым"
