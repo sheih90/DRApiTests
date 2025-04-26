@@ -9,15 +9,18 @@ SINGLE_USER = "api/users/2"
 SINGLE_USER_NOT_FOUND = "api/users/23"
 EMAIL_ENDS = "reqres.in"
 AVATAR_ENDS = "-image.jpg"
-
+headers = {
+    "x-api-key": "reqres-free-v1"  # API-ключ для авторизации
+}
 
 
 @allure.feature("Users")
 class TestUsers:
     @allure.title("Получение списка пользователей")
     def test_list_users(self):
+
         with allure.step("Отправка запроса на получение списка пользователей"):
-            response = httpx.get(BASE_URL + LIST_USERS)
+            response = httpx.get(BASE_URL + LIST_USERS, headers = headers)
         with allure.step("Проверка статуса ответа"):
             assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
 
@@ -33,7 +36,7 @@ class TestUsers:
     @allure.title("Получение данных одного пользователя")
     def test_single_user(self):
         with allure.step("Отправка запроса на получение данных одого пользователя"):
-            response = httpx.get(BASE_URL + SINGLE_USER)
+            response = httpx.get(BASE_URL + SINGLE_USER, headers = headers)
         with allure.step("Проверка статуса ответа"):
             assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
 
@@ -46,6 +49,6 @@ class TestUsers:
     @allure.title("Проверка, что пользователь не найден")
     def test_single_user_not_found(self):
         with allure.step("Отправка запроса на получение данных одого пользователя"):
-            response = httpx.get(BASE_URL + SINGLE_USER_NOT_FOUND)
+            response = httpx.get(BASE_URL + SINGLE_USER_NOT_FOUND, headers = headers)
         with allure.step("Проверка статуса ответа"):
-            assert response.status_code == 401, "Код ответа не совпал с ожидаемым"
+            assert response.status_code == 404, "Код ответа не совпал с ожидаемым"
