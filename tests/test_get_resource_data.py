@@ -12,6 +12,9 @@ SINGLE_RESOURCE_NOT_FOUND = "api/unknown/23"
 EMAIL_ENDS = "reqres.in"
 AVATAR_ENDS = "-image.jpg"
 COLOR_STARTS = "#"
+headers = {
+    "x-api-key": "reqres-free-v1"  # API-ключ для авторизации
+}
 
 
 @allure.feature("Resources")
@@ -19,10 +22,10 @@ class TestResources:
     @allure.title("Проверка получения списка ресурсов")
     def test_list_resource(self):
         with allure.step(f"Отправляем запрос по адресу: {BASE_URL + LIST_RESOURCE}"):
-            response = httpx.get(BASE_URL + LIST_RESOURCE)
+            response = httpx.get(BASE_URL + LIST_RESOURCE, headers = headers)
 
         with allure.step("Проверяем код ответа"):
-            assert response.status_code == 401
+            assert response.status_code == 200
 
         data = response.json()['data']
         for item in data:
@@ -39,7 +42,7 @@ class TestResources:
     @allure.title("Проверка получения одного ресурса")
     def test_single_resource(self):
         with allure.step(f"Отправляем запрос по адресу: {BASE_URL + SINGLE_RESOURCE}"):
-            response = httpx.get(BASE_URL + SINGLE_RESOURCE)
+            response = httpx.get(BASE_URL + SINGLE_RESOURCE, headers = headers)
         with allure.step("Проверяем код ответа"):
             assert response.status_code == 200
 
@@ -56,6 +59,6 @@ class TestResources:
     @allure.title("Проверяем, что ресурс не найден")
     def test_single_resource_not_found(self):
         with allure.step(f"Отправляем запрос по адресу: {BASE_URL + SINGLE_RESOURCE_NOT_FOUND}"):
-            response = httpx.get(BASE_URL + SINGLE_RESOURCE_NOT_FOUND)
+            response = httpx.get(BASE_URL + SINGLE_RESOURCE_NOT_FOUND, headers = headers)
         with allure.step("Проверяем код ответа"):
-            assert response.status_code == 401
+            assert response.status_code == 404
