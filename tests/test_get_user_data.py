@@ -7,6 +7,7 @@ BASE_URL = "https://reqres.in/"
 LIST_USERS = "api/users?page=2"
 SINGLE_USER = "api/users/2"
 SINGLE_USER_NOT_FOUND = "api/users/23"
+DELAYED_REQUEST = "api/users?delay=3"
 EMAIL_ENDS = "reqres.in"
 AVATAR_ENDS = "-image.jpg"
 headers = {
@@ -52,3 +53,11 @@ class TestUsers:
             response = httpx.get(BASE_URL + SINGLE_USER_NOT_FOUND, headers = headers)
         with allure.step("Проверка статуса ответа"):
             assert response.status_code == 404, "Код ответа не совпал с ожидаемым"
+
+    @allure.title("Проверка таймаута отложенного запроса получения списка пользователей")
+    def test_delayed_user_list(self):
+        with allure.step("Отправка запроса на получение списка пользователей с таймаутом"):
+            response = httpx.get(BASE_URL + DELAYED_REQUEST, headers = headers, timeout=5)
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
+
